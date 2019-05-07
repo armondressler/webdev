@@ -167,8 +167,7 @@ if(isset($_GET['newMeasurement'])){
     <h2 id=\"medicines\">Medicines</h2>";
   // get the medicines that have been admistered to the patient and display them in a list
   echo "<h4 id=\"administered\">Medicines taken</h2>";
-    $sql = "create temporary table medLineNurse
-    (select
+    $sql = "select
       medicament.medicament_name,
       medicament.unit,
       medicine.medicineID,
@@ -184,7 +183,6 @@ if(isset($_GET['newMeasurement'])){
       AND staff.staffID=medicine.staffID_nurse
       AND staff.fonctionID=function.functionID
       AND patient.name='".$NAME."'
-    )
     ";
     $medicines = $dbh->query($sql);
 
