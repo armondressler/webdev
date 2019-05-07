@@ -4,7 +4,6 @@ session_start();
 // First, we test if user is logged. If not, goto main.php (login page).
 if(!isset($_SESSION['user'])){
   header("Location: main.php");
-  //echo "problem with user";
   exit();
 }
 
@@ -14,6 +13,8 @@ if(!isset($_SESSION['user'])){
   <head>
     <title>Patient's vital signs</title>
     <link href="style.css" type="text/css" rel="stylesheet">
+    <script src="editableSelect.js"></script>
+
   </head>
   <body>
 
@@ -189,6 +190,7 @@ if(isset($_GET['newMeasurement'])){
             <input type="text" name="newMed" placeholder="drug name" value="" size="18" />
 
 <?php
+
 //set a dropdown list for unit
 ?>
             <select name = "dropdown_unit">
@@ -217,7 +219,9 @@ if(isset($_GET['newMeasurement'])){
 ?>
             <input type="hidden" name="id" value="<?php echo $PATIENT_ID?>"/>
             <input type="submit" name="AddMed" value="add"/>
-        </form>    
+        </form>
+
+
     <?php
     if(isset($_GET['newMeasurement'])){
       $sql= "select medicamentID from medicament where medicament_name='".$_GET['dropdown_med']."'";
@@ -264,6 +268,32 @@ catch(PDOException $e)
 
 <br/><br/><br/>
 <i><a href="logout.php">Logout</a></i> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<form>
+  <input type="text" name="myText" value="Norway" selectBoxOptions="Canada;Denmark;Finland;Germany;Mexico;Norway;Sweden;United Kingdom;United States">
+	<input type="text" name="myText2" value="" selectBoxOptions="Amy;Andrew;Carol;Jennifer;Jim;Tim;Tommy;Vince">
+</form>
+
+<script type="text/javascript">
+createEditableSelect(document.forms[0].myText);
+createEditableSelect(document.forms[0].myText2);
+</script>
 
 </body>
 </html>
