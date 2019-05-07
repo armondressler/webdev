@@ -164,17 +164,35 @@ if(isset($_GET['newMeasurement'])){
 
 /*** The Medicines ***/
   echo "<br/><br/>\n
-    <h2 id=\"medicines\">Medicines taken</h2>";
-  // get the patient's medicines and display them in a list
-    $sql = "select patient.patientID, medicament.medicament_name, medicine.quantity, medicine.time, medicine.note FROM patient, medicament, medicine WHERE patient.patientID=medicine.patientID AND medicine.medicamentID=medicament.medicamentID AND patient.name='".$NAME."'";
+    <h2 id=\"medicines\">Medicines</h2>";
+  // get the medicines that have been admistered to the patient and display them in a list
+  echo "<h4 id=\"administered\">Medicines taken</h2>";
+    $sql = "select
+      medicament.medicament_name,
+      medicament.unit,
+      medicine.medicineID,
+      medicine.staffID_physician,
+      medicine.quantity,
+      medicine.time,
+      medicine.note,
+      staff.name,
+      function.function_name
+    FROM patient, medicament, medicine, staff, function
+    WHERE patient.patientID=medicine.patientID
+      AND medicine.medicamentID=medicament.medicamentID
+      AND staff.staffID=medicine.staffID_nurse
+      AND staff.fonctionID=function.functionID
+      AND patient.name='".$NAME."'
+    ";
     $medicines = $dbh->query($sql);
+
     $medicine_NA = true;
     while($medicine = $medicines->fetch()){
       $medicine_NA = false;
       if(isset($medicine['note'])){
-        echo $medicine['quantity']." ".$medicine['medicament_name']." at ".$medicine['time']." (note from staff: ".$medicine['note'].").";
+        echo $medicine['medicament_name'].": ".$medicine['quantity']." ".$medicine['unit']." at ".$medicine['time']." (administated by ".$medicine['function_name']." ".$medicine['name'].": ".$medicine['note'].").";
       } else{
-        echo $medicine['quantity']." ".$medicine['medicament_name']." at ".$medicine['time'].".";
+        echo $medicine['medicament_name'].": ".$medicine['quantity']." ".$medicine['unit']." at ".$medicine['time']." (administated by ".$medicine['function_name']." ".$medicine['name'].".";
       }
       echo "<br>\n";
     }
@@ -197,9 +215,15 @@ if(isset($_GET['newMeasurement'])){
 <?php
               $sql = "select unit from medicament";
               $result = $dbh->query($sql);
-              while($med = $result->fetch()){
-                echo "<option value = \"".$med['unit']."\"> ".$med['unit']."</option>\n";
+              while($meds = $result->fetch()){
+                $units[] = $meds['unit'];
               }
+              $units_filtered = sort(array_unique($units));
+              foreach($units_filtered as $unit){
+                echo "<option value = \"".$unit."\"> ".$unit."</option>\n";
+              }
+
+                
 ?>       
             </select>
 
