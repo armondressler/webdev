@@ -132,7 +132,7 @@ if(!isset($_SESSION['user'])){
     //!!INPUT VALIDATION needed!!
 ?>
         <input type="text" name="newMeasurement" placeholder="value" value="" size="9" />
-        <input type="text" name="note" placeholder="note about value" value="" size="18" />
+        <input type="text" name="note" placeholder="note about measurement" value="" size="27" />
         
 <?php
     //set the submit button for the new vital sign, including a hidden field containing the patient's ID to assure the patient isn't lost on reload
@@ -167,7 +167,8 @@ if(isset($_GET['newMeasurement'])){
     <h2 id=\"medicines\">Medicines</h2>";
   // get the medicines that have been admistered to the patient and display them in a list
   echo "<h4 id=\"administered\">Medicines taken</h2>";
-    $sql = "select
+    $sql = "create temporary table medLineNurse
+    (select
       medicament.medicament_name,
       medicament.unit,
       medicine.medicineID,
@@ -183,6 +184,7 @@ if(isset($_GET['newMeasurement'])){
       AND staff.staffID=medicine.staffID_nurse
       AND staff.fonctionID=function.functionID
       AND patient.name='".$NAME."'
+    )
     ";
     $medicines = $dbh->query($sql);
 
@@ -218,7 +220,8 @@ if(isset($_GET['newMeasurement'])){
               while($meds = $result->fetch()){
                 $units[] = $meds['unit'];
               }
-              $units_filtered = sort(array_unique($units));
+              $units_filtered = array_unique($units);
+              arsort($units_filtered);
               foreach($units_filtered as $unit){
                 echo "<option value = \"".$unit."\"> ".$unit."</option>\n";
               }
