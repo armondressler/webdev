@@ -2,6 +2,16 @@ div {
   display: block;
 }
 
+select:required:invalid {
+  color: gray;
+}
+option[value=""][disabled] {
+  display: none;
+}
+option {
+  color: black;
+}
+
 /* .Temperature {
   color: #e92f0e;
   display: none;

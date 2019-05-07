@@ -49,7 +49,7 @@ if(!isset($_SESSION['user'])){
   echo "<h2 id=\"vitalsigns\">Vital Signs</h2>";
   // set the buttons to choose one of the vital signs available
         echo "<br/>Choose what to display: &nbsp;";
-        $sql = "select sign_name from sign";
+        $sql = "SELECT sign_name FROM sign";
         $result = $dbh->query($sql);
         while($vs = $result->fetch()){
           $vs_stripped = str_replace(' ', '', $vs['sign_name']);
@@ -113,13 +113,20 @@ if(!isset($_SESSION['user'])){
 
 
   // set the controls to add a vital sign
-    //set a dropdown list for available vital signs
+
         echo "<br/><h3 id=\"addSign\">Add a vital sign measurement</h3>";
+    // start with including a hidden field containing the patient's ID to assure the patient isn't lost on reload
 ?>
-    <form method="GET" action="viewPatient.php">
+      <form method="GET" action="viewPatient.php">
+        <input type="hidden" name="id" value="<?php echo $PATIENT_ID?>"/>
+
+
+<?php
+    //set a dropdown list for available vital signs
+?>
         <select name = "dropdown_vs">
 <?php
-          $sql = "select sign_name from sign";
+          $sql = "SELECT sign_name FROM sign";
           $result = $dbh->query($sql);
           while($vs = $result->fetch()){
             echo "<option value = \"".$vs['sign_name']."\"> ".$vs['sign_name']."</option>\n";
@@ -135,31 +142,33 @@ if(!isset($_SESSION['user'])){
         <input type="text" name="note" placeholder="note about measurement" value="" size="27" />
         
 <?php
-    //set the submit button for the new vital sign, including a hidden field containing the patient's ID to assure the patient isn't lost on reload
+    //set the submit button for the new vital sign
 ?>
-        <input type="submit" name="AddValue" value="add and display"/>
-        <input type="hidden" name="id" value="<?php echo $PATIENT_ID?>"/>
+        <input type="submit" name="AddValue" value="add AND display"/>
     </form>    
 <?php
-if(isset($_GET['newMeasurement'])){
-  $sql= "select signID from sign where sign_name='".$_GET['dropdown_vs']."'";
-  $result = $dbh->query($sql);
-    
-  $vsID=$result->fetch();
+
+
+    //add the new information into the database
+    if(isset($_GET['newMeasurement'])){
+      $sql= "SELECT signID FROM sign WHERE sign_name='".$_GET['dropdown_vs']."'";
+      $result = $dbh->query($sql);
         
-  $sql = "INSERT
-    INTO vital_sign
-   VALUES (
-      '',
-      '".$PATIENT_ID."',
-      '".$vsID[0]."',
-      '".$_GET['newMeasurement']."',
-      CURRENT_TIMESTAMP,
-      '".$_GET['note']."'
-    )";
-  $dbh->exec($sql);
-  changeH3('$_GET[\'dropdown_vs\']');
-}
+      $vsID=$result->fetch();
+            
+      $sql = "INSERT
+        INTO vital_sign
+      VALUES (
+          '',
+          '".$PATIENT_ID."',
+          '".$vsID[0]."',
+          '".$_GET['newMeasurement']."',
+          CURRENT_TIMESTAMP,
+          '".$_GET['note']."'
+        )";
+      $dbh->exec($sql);
+      changeH3('$_GET[\'dropdown_vs\']');
+    }
 
 
 /*** The Medicines ***/
@@ -167,11 +176,29 @@ if(isset($_GET['newMeasurement'])){
     <h2 id=\"medicines\">Medicines</h2>";
   // get the medicines that have been admistered to the patient and display them in a list
   echo "<h4 id=\"administered\">Medicines taken</h2>";
-    $sql = "select
+    // first, make an array[][] $medPscr_arr of pairs of medicineID and prescriber (note: key=>value array NOT possible, as key not continuous!)
+      $sql = "SELECT
+        medicine.medicineID,
+        staff.name
+      FROM medicine, staff, medicament
+      WHERE staff.staffID=medicine.staffID_physician
+        AND medicine.medicamentID=medicament.medicamentID
+      ";
+    $medsPrescr = $dbh->query($sql);
+    $i=0;
+    while($medPscr = $medsPrescr->fetch()){
+      $medPscr_arr[$i][0] = $medPscr['medicineID'];
+      $medPscr_arr[$i][1] = $medPscr['name'];
+      $i++;
+    }  
+    //then
+    // - get all the other information about the administrations (med name, unit, qty, adminstrating staff member, time, ..)
+    // - and combine them with the prescriber information from the array[][] $medPscr_arr above
+    // - then display this now completed list
+  $sql = "SELECT
       medicament.medicament_name,
       medicament.unit,
       medicine.medicineID,
-      medicine.staffID_physician,
       medicine.quantity,
       medicine.time,
       medicine.note,
@@ -185,35 +212,61 @@ if(isset($_GET['newMeasurement'])){
       AND patient.name='".$NAME."'
     ";
     $medicines = $dbh->query($sql);
-
     $medicine_NA = true;
+    $i=0;
     while($medicine = $medicines->fetch()){
       $medicine_NA = false;
-      if(isset($medicine['note'])){
-        echo $medicine['medicament_name'].": ".$medicine['quantity']." ".$medicine['unit']." at ".$medicine['time']." (administated by ".$medicine['function_name']." ".$medicine['name'].": ".$medicine['note'].").";
-      } else{
-        echo $medicine['medicament_name'].": ".$medicine['quantity']." ".$medicine['unit']." at ".$medicine['time']." (administated by ".$medicine['function_name']." ".$medicine['name'].".";
+      while($medPscr_arr[$i][0]!=$medicine['medicineID'] && $i <= sizeof($medPscr_arr)){
+        $i++;
       }
+      echo $medicine['medicament_name']." (prescribed by Dr. ".$medPscr_arr[$i][1]."): ".$medicine['quantity']." ".$medicine['unit']." at ".$medicine['time']." (administated by ".$medicine['function_name']." ".$medicine['name'];
+      if(isset($medicine['note'])){
+        echo ": ".$medicine['note'];
+      }
+      echo ").";
       echo "<br>\n";
+      
     }
     if($medicine_NA){
       echo "<i>&nbsp;&nbsp;No medicines for patient ".$NAME.".</i><br>\n";
     }
 
   // set the controls to add a medicine
-    echo "<br/><h3 id=\"addMed\">Add a medicine</h3>";
-    //set the text field for the drug name
-?>
+    echo "<br/><h3 id=\"addMed\">Add a prescribed administration of a medicine</h3>";
+    // start with including a hidden field containing the patient's ID to assure the patient isn't lost on reload
+    ?>
         <form method="GET" action="viewPatient.php">
-            <input type="text" name="newMed" placeholder="drug name" value="" size="18" />
+            <input type="hidden" name="id" value="<?php echo $PATIENT_ID?>"/>
+
+
+<?php
+    //set a dropdown list for the new prescribed administration of a medicine
+?>
+    <select required name = "dropdown_newMed">
+<?php
+      echo "<option value=\"\" disabled selected>Select medicament...</option>";
+      $sql = "SELECT medicament_name
+              FROM medicament";
+      $result = $dbh->query($sql);
+      while($meds = $result->fetch()){
+        $med[] = $meds['medicament_name'];
+      }
+      $med_filtered = array_unique($med);
+      sort($med_filtered);
+      foreach($med_filtered as $med_itm){
+        echo "<option value = \"".$med_itm."\"> ".$med_itm."</option>\n";
+      }  
+?>       
+    </select>
 
 <?php
 
-//set a dropdown list for unit
+
+    //set a dropdown list for unit
 ?>
             <select name = "dropdown_unit">
 <?php
-              $sql = "select unit from medicament";
+              $sql = "SELECT unit FROM medicament";
               $result = $dbh->query($sql);
               while($meds = $result->fetch()){
                 $units[] = $meds['unit'];
@@ -222,14 +275,13 @@ if(isset($_GET['newMeasurement'])){
               arsort($units_filtered);
               foreach($units_filtered as $unit){
                 echo "<option value = \"".$unit."\"> ".$unit."</option>\n";
-              }
-
-                
+              }           
 ?>       
             </select>
 
+
 <?php
-//set a dropdown list for quantity
+    //set a dropdown list for quantity
 ?>
             <select name = "dropdown_qty">
 <?php
@@ -239,35 +291,102 @@ if(isset($_GET['newMeasurement'])){
 ?>       
             </select>
 
+
 <?php
-    //set the submit button for the new medicine, including a hidden field containing the patient's ID to assure the patient isn't lost on reload
+    //set a dropdown list for the prescribing staff member (from which staff groups a prescriber can be chosen can be pre-set by adding function_name AND-statements in the WHERE-clause of the sql query.)
+    ?>
+    <select required name = "dropdown_prescr">
+<?php
+      echo "<option value=\"\" disabled selected>Select prescriber...</option>";
+      $sql = "SELECT name
+              FROM staff, function
+              WHERE staff.fonctionID=function.functionID
+                AND function.function_name='Physician'";
+      $result = $dbh->query($sql);
+      $staff = array();
+      while($names = $result->fetch()){
+        $staff[] = $names['name'];
+      }
+      $staff_filtered = array_unique($staff);
+      sort($staff_filtered);
+      foreach($staff_filtered as $staff_mbr){
+        echo "<option value = \"".$staff_mbr."\"> ".$staff_mbr."</option>\n";
+      }  
+?>       
+    </select>
+
+<?php
+
+
+    //set a dropdown list for the administrating staff member (from which staff groups someone can administrate a medicine can be pre-set by adding function_name AND-statements in the WHERE-clause of the sql query.)
+    ?>
+    <select required name = "dropdown_adm">
+<?php
+      echo "<option value=\"\" disabled selected>Administr. staff member...</option>";
+      $sql = "SELECT name
+              FROM staff, function
+              WHERE staff.fonctionID=function.functionID
+                AND function.function_name='Nurse'";
+      $result = $dbh->query($sql);
+      $staff = array();
+      while($names = $result->fetch()){
+        $staff[] = $names['name'];
+      }
+      $staff_filtered = array_unique($staff);
+      sort($staff_filtered);
+      foreach($staff_filtered as $staff_mbr){
+        echo "<option value = \"".$staff_mbr."\"> ".$staff_mbr."</option>\n";
+      }  
+?>       
+    </select>
+
+<?php
+
+
+    //set the text field for a note about the new medicine
+    //  DODO: linebreak %0D%0A and space + should be filtered..!
 ?>
-            <input type="hidden" name="id" value="<?php echo $PATIENT_ID?>"/>
+    <textarea name="note_newMed" placeholder="note (opt.)" value="" cols="18" rows="4"></textarea>
+<?php
+
+
+//set the submit button for the new medicine
+?>
             <input type="submit" name="AddMed" value="add"/>
         </form>
 
-
-    <?php
-    if(isset($_GET['newMeasurement'])){
-      $sql= "select medicamentID from medicament where medicament_name='".$_GET['dropdown_med']."'";
+<?php
+        //add the new information into the database
+    if(isset($_GET['dropdown_newMed'])){
+      //get the medicament's ID
+      $sql= "SELECT medicamentID FROM medicament WHERE medicament_name='".$_GET['dropdown_newMed']."'";
       $result = $dbh->query($sql);
-        
-      $vsID=$result->fetch();
+      $medID=$result->fetch();
+
+      //get the administrating staff member's ID
+      $sql= "SELECT staffID FROM staff WHERE name='".$_GET['dropdown_adm']."'";
+      $result = $dbh->query($sql);
+      $admID=$result->fetch();
+
+      //get the prescribing staff member's ID
+      $sql= "SELECT staffID FROM staff WHERE name='".$_GET['dropdown_prescr']."'";
+      $result = $dbh->query($sql);
+      $prscrID=$result->fetch();
             
       $sql = "INSERT
-        INTO vital_sign
-       VALUES (
+        INTO medicine
+      VALUES (
           '',
-          '".$PATIENT_ID."',
-          '".$vsID[0]."',
-          '".$_GET['newMeasurement']."',
           CURRENT_TIMESTAMP,
-          '".$_GET['note']."'
+          '".$_GET['dropdown_qty']."',
+          '".$medID[0]."',
+          '".$PATIENT_ID."',
+          '".$admID[0]."',
+          '".$prscrID[0]."',
+          '".$_GET['note_newMed']."'
         )";
       $dbh->exec($sql);
-      changeH3('$_GET[\'dropdown_vs\']');
     }
-
 ?>
     <br/>
 <?php     
