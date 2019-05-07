@@ -8,55 +8,151 @@ if(!isset($_SESSION['user'])){
   exit();
 }
 
+// set the html head
+?>
+<html>
+  <head>
+    <title>Patient's vital signs</title>
+    <link href="style.css" type="text/css" rel="stylesheet">
+  </head>
+  <body>
 
-include('pdo.inc.php');
+<?php
+  include('pdo.inc.php');
 
-try {
-    $dbh = new PDO("mysql:host=$hostname;dbname=$dbname", $username, $password);
-    $patientID=0;
-    if(isset($_GET['id'])){
-      $patientID = (int)($_GET['id']);
-    }
-    if($patientID >0){
+  try {
+      $dbh = new PDO("mysql:host=$hostname;dbname=$dbname", $username, $password);
+      $patientID=0;
+      if(isset($_GET['id'])){
+        $patientID = (int)($_GET['id']);
+      }
+/*** if the selected patientID does not exist, state that  ***/
+      if($patientID <=0){
+        echo "<h1>The patient does not exist</h1>";
+      }else{
 
-      $sql0 = "SELECT name, first_name
-  FROM patient
-  WHERE patient.patientID = :patientID";
+/*** echo a message saying we have connected: Display the Patient Name in the Header ***/
+        $sql0 = "SELECT name, first_name
+        FROM patient
+        WHERE patient.patientID = :patientID";
+        $statement0 = $dbh->prepare($sql0);
+        $statement0->bindParam(':patientID', $patientID, PDO::PARAM_INT);
+        $result0 = $statement0->execute();
+        while($line = $statement0->fetch()){
+          echo "<h1> Patient : ".$line['first_name']."  ".$line['name']."</h1>";
+          echo "<br>\n";
+        }
+     
+// set the buttons to choose one of the vital signs available
+        echo "<br/>";
+        $sql = "select sign_name from sign";
+        $result = $dbh->query($sql);
+        while($vs = $result->fetch()){
+          echo "<input type=\"button\" ".
+          "value=\"".$vs['sign_name']." \" ".
+          "name=\"btn".$vs['sign_name']." \" ".
+          "onClick=\"changeH3('".$vs['sign_name']."')\"/>".
+          "<br/>";
 
-    $statement0 = $dbh->prepare($sql0);
-    $statement0->bindParam(':patientID', $patientID, PDO::PARAM_INT);
-    $result0 = $statement0->execute();
+        }
 
-    while($line = $statement0->fetch()){
-      echo "<h1> Patient : ".$line['first_name']."  ".$line['name']."</h1>";
+?>
+    <script type="text/javascript">
+      function changeH3($vitalSignsToShow) {
 
-      echo "<br>\n";
-    }
+//put all vital signs into an array, and set their display property to 'none' (i.e., hide them)
+        var arrDiv = Array.prototype.slice.call(document.getElementsByTagName("div"));
+        for(var i in arrDiv){
+          arrDiv[i].style.display = 'none';
+        };
+
+  //display the vital sign type (according to what button was pressed) as a header
+        document.getElementById("sign").textContent = $vitalSignsToShow;
+
+  //put all vital signs of the chosen type into an array, and set their display property to 'block' (i.e., unhide them)
+        var arrShow = Array.prototype.slice.call(document.getElementsByClassName($vitalSignsToShow));
+        for(var i in arrShow){
+          arrShow[i].style.display = 'block';
+        };
+      }
+    </script>
+    <br />
+      <?php
+
+  //Insert a <h3> placeholder for displaying the vital sign type chosen according to what button was pressed
+        echo "<h3 id=\"sign\"></h3>";
 
 
-      /*** echo a message saying we have connected ***/
-      $sql = "SELECT name, first_name, value, time, sign_name
-  FROM patient, vital_sign, sign
-  WHERE patient.patientID = vital_sign.patientID
-    AND vital_sign.signID = sign.signID 
-    AND patient.patientID = :patientID";
+  
+        $sql = "SELECT name, first_name, value, time, sign_name
+        FROM patient, vital_sign, sign
+        WHERE patient.patientID = vital_sign.patientID
+          AND vital_sign.signID = sign.signID 
+          AND patient.patientID = :patientID";
 
-    $statement = $dbh->prepare($sql);
-    $statement->bindParam(':patientID', $patientID, PDO::PARAM_INT);
-    $result = $statement->execute();
+        $statement = $dbh->prepare($sql);
+        $statement->bindParam(':patientID', $patientID, PDO::PARAM_INT);
+        $result = $statement->execute();
 
-    while($line = $statement->fetch()){
-      echo $line['sign_name']." = ".$line['value']. " at ".$line['time'];
+/*** display the vital signs ***/
+        while($line = $statement->fetch()){
+          echo "<div class = \"".$line['sign_name']."\">\n".
+            "\t".$line['value']. " at ".$line['time']."\n".
+            "</div>\n";
+        }
 
-      echo "<br>\n";
-    }
 
-    }
-    else{
-      echo "<h1>The patient does not exist</h1>";
-    }
+// set the controls to add a vital sign
+  //set a dropdown list for available vital signs
+        echo "<br/><br/><br/><h3 id=\"addSign\">Add a vital sign measurement</h3>";
+?>
+    <form method="GET" action="viewPatient.php">
+        <select name = "dropdown_vs">
+<?php
+        $sql = "select sign_name from sign";
+        $result = $dbh->query($sql);
+        while($vs = $result->fetch()){
+          echo "<option value = \"".$vs['sign_name']."\"> ".$vs['sign_name']."</option>";
+        }
+?>       
+        </select>
+        <input type="hidden" name="id" value="<?php echo $_GET['id']?>"/>
+        <input type="text" name="newMeasurement" placeholder="value" value="" size="9" />
+        <input type="text" name="note" placeholder="note about value" value="" size="18" />
+        <input type="submit" name="AddValue" value="add and display"/>
+    </form>    
+<?php
+if(isset($_GET['newMeasurement'])){
+  $sql= "select signID from sign where sign_name='".$_GET['dropdown_vs']."'";
+  $result = $dbh->query($sql);
+    
+  $vsID=$result->fetch();
+        
+  $sql = "INSERT
+    INTO vital_sign
+   VALUES (
+      '',
+      '".$_GET['id']."',
+      '".$vsID[0]."',
+      '".$_GET['newMeasurement']."',
+      CURRENT_TIMESTAMP,
+      '".$_GET['note']."'
+    )";
+  $dbh->exec($sql);
+  changeH3('$_GET[\'dropdown_vs\']');
+}
 
-    //$dbh = null;
+
+?>
+    <br />
+<?php     
+
+
+
+
+
+      }
+    $dbh = null;
 }
 catch(PDOException $e)
 {
@@ -67,99 +163,12 @@ catch(PDOException $e)
 
 
 ?>
-<h2> Exercise 1</h2>
-Buttons for displaying just an alert.<br>
-<button onclick="alert('Temperature');">Temperature</button>
-  <button onclick="alert('Pulse');">Pulse</button><button onclick="alert('Activity');">Activity</button>
-
-<br>
-<script>
-  function writeMessage(msg){
-    document.getElementById("sign").textContent=msg;
-  }
-  </script>
-  <h3 id="sign">Test </h3>
-  Buttons for displaying in the previous H3 placeholder.<br>
-<button onclick="writeMessage('Temperature');">Temperature</button>
-  <button onclick="writeMessage('Pulse');">Pulse</button><button onclick="writeMessage('Activity');">Activity</button>
-
-  
-<h2> Exercise 2</h2>
-<script>
-  function displayVitalSigns(sign){
-    var list = document.getElementsByClassName("signs");
-    for(var i in list){
-      if(list[i].style !== undefined){
-	list[i].style.display="none";
-      }
-    }
-    var list2 = document.getElementsByClassName(sign);
-    if(list2){
-      for(var i2 in list2){
-	if(list2[i2].style !== undefined){
-	  list2[i2].style.display="block";
-	}
-      }
-    }
-    else{
-      alert('no list');
-    }
-  }
-  </script>
-<style>
-.Temperature {
-    display: none;
-    }
-.Pulse {
-    display: none;
- }
-  .Activity {
-        display: none;
-
-       }
-
-  </style>
-  
-Buttons for displaying just an alert.<br>
-<button onclick="displayVitalSigns('Temperature');">Temperature</button>
-  <button onclick="displayVitalSigns('Pulse');">Pulse</button><button onclick="displayVitalSigns('Activity');">Activity</button>
 
 
 
-  <?php
-  try {
+</br></br></br>
+<i><a href="logout.php">Logout</a></i> 
 
-      if($patientID >0){
-      $sql = "SELECT name, first_name, value, time, sign_name
-  FROM patient, vital_sign, sign
-  WHERE patient.patientID = vital_sign.patientID
-    AND vital_sign.signID = sign.signID 
-    AND patient.patientID = :patientID";
+</body>
+</html>
 
-    $statement = $dbh->prepare($sql);
-    $statement->bindParam(':patientID', $patientID, PDO::PARAM_INT);
-    $result = $statement->execute();
-
-    while($line = $statement->fetch()){
-      echo "<div class='signs ".$line['sign_name']."'>".$line['value']. " at ".$line['time']."</div>\n";
-
-    }
-
-    }
-    else{
-      echo "<h1>The patient does not exist</h1>";
-    }
-
-    $dbh = null;
-}
-catch(PDOException $e)
-{
-
-    /*** echo the sql statement and error message ***/
-    echo $e->getMessage();
-}
-
-  ?>
-  
-<br />
-<i><a href="logout.php">Logout</a></i>
