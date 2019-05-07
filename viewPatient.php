@@ -40,7 +40,7 @@ if(!isset($_SESSION['user'])){
         $result0 = $statement0->execute();
         while($line = $statement0->fetch()){
           echo "<h1> Patient : ".$line['first_name']."  ".$line['name']."</h1>";
-          echo "<br>\n";
+          echo "<br/>\n";
         }
      
 // set the buttons to choose one of the vital signs available
@@ -48,23 +48,24 @@ if(!isset($_SESSION['user'])){
         $sql = "select sign_name from sign";
         $result = $dbh->query($sql);
         while($vs = $result->fetch()){
+          $vs_stripped = str_replace(' ', '', $vs['sign_name']);
           echo "<input type=\"button\" ".
-          "value=\"".$vs['sign_name']." \" ".
-          "name=\"btn".$vs['sign_name']." \" ".
+          "value=\"".$vs['sign_name']."\" ".
+          "name=\"btn".$vs_stripped."\" ".
           "onClick=\"changeH3('".$vs['sign_name']."')\"/>".
-          "<br/>";
+          "\n";
 
         }
 
 ?>
-    <script type="text/javascript">
+<script type="text/javascript">
       function changeH3($vitalSignsToShow) {
 
 //put all vital signs into an array, and set their display property to 'none' (i.e., hide them)
         var arrDiv = Array.prototype.slice.call(document.getElementsByTagName("div"));
         for(var i in arrDiv){
           arrDiv[i].style.display = 'none';
-        };
+        }
 
   //display the vital sign type (according to what button was pressed) as a header
         document.getElementById("sign").textContent = $vitalSignsToShow;
@@ -73,14 +74,14 @@ if(!isset($_SESSION['user'])){
         var arrShow = Array.prototype.slice.call(document.getElementsByClassName($vitalSignsToShow));
         for(var i in arrShow){
           arrShow[i].style.display = 'block';
-        };
+        }
       }
     </script>
     <br />
       <?php
 
   //Insert a <h3> placeholder for displaying the vital sign type chosen according to what button was pressed
-        echo "<h3 id=\"sign\"></h3>";
+        echo "<h3 id=\"sign\"></h3>\n";
 
 
   
@@ -96,10 +97,10 @@ if(!isset($_SESSION['user'])){
 
 /*** display the vital signs ***/
         while($line = $statement->fetch()){
-          echo "<div class = \"".$line['sign_name']."\">\n".
-            "\t".$line['value']. " at ".$line['time']."\n".
-            "</div>\n";
-        }
+            echo "<div class = \"".$line['sign_name']."\">\n".
+              "\t".$line['value']. " at ".$line['time']."\n".
+              "</div>\n";
+          }
 
 
 // set the controls to add a vital sign
@@ -144,7 +145,7 @@ if(isset($_GET['newMeasurement'])){
 
 
 ?>
-    <br />
+    <br/>
 <?php     
 
 
@@ -166,7 +167,7 @@ catch(PDOException $e)
 
 
 
-</br></br></br>
+<br/><br/><br/>
 <i><a href="logout.php">Logout</a></i> 
 
 </body>
