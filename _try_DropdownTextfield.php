@@ -1,6 +1,6 @@
 <html>
 <head>
-    <link href="style.css" type="text/css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="additional.css" >
     <script src="editableSelect.js"></script>
 </head>
 <body>

@@ -1,3 +1,6 @@
+<head>
+<link rel="stylesheet" type="text/css" href="additional.css" >
+</head>
 <?php
 session_start();
 

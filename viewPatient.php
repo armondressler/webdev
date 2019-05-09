@@ -12,9 +12,8 @@ if(!isset($_SESSION['user'])){
 <html>
   <head>
     <title>Patient's vital signs</title>
-    <link href="style.css" type="text/css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="additional.css" >
     <script src="editableSelect.js"></script>
-
   </head>
   <body>
 
