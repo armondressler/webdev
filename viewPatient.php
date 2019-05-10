@@ -41,7 +41,11 @@ if(!isset($_SESSION['user'])){
         while($line = $statement0->fetch()){
           $NAME = $line['name'];
           $FIRST_NAME = $line['first_name'];
-          echo "<div id='patientheader'><h1> Patient : ".$FIRST_NAME."  ".$NAME."</h1></div>";
+	  echo "<div id='patientheader'><div style='float:left;'><h1> Patient : ".$FIRST_NAME."  ".$NAME."</h1></div><div style='float:right; padding-right:10px; padding-top:10px;'>
+		  <form action='/listPatients.php' method='get'>
+		    <button type='submit'>Patient List</button>
+                  </form>
+		  </div></div>";
           echo "<br/>\n";
         }
 /*** The vital signs ***/
