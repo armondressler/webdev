@@ -56,7 +56,7 @@ footer, header, hgroup, menu, nav, section {
 
 body {
   line-height: 1; 
-  margin: 5%; }
+  margin: 3%; }
 
 ol, ul {
   list-style: none; }
@@ -2660,6 +2660,15 @@ body {
   @media screen and (max-width: 980px) {
     #heading {
       padding: 2rem; } }
+
+#patientheader {
+	position: fixed;
+	background: #eeeeee;
+	width: 100%;
+	margin: 0%;
+	top: 0;
+      	left: 0;
+}
 
 /* Main */
 #main .content {

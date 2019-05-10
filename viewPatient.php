@@ -41,7 +41,7 @@ if(!isset($_SESSION['user'])){
         while($line = $statement0->fetch()){
           $NAME = $line['name'];
           $FIRST_NAME = $line['first_name'];
-          echo "<h1> Patient : ".$FIRST_NAME."  ".$NAME."</h1>";
+          echo "<div id='patientheader'><h1> Patient : ".$FIRST_NAME."  ".$NAME."</h1></div>";
           echo "<br/>\n";
         }
 /*** The vital signs ***/
