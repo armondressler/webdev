@@ -106,7 +106,7 @@ if(!isset($_SESSION['user'])){
           $vital_sign_NA = true;
           while($line = $statement->fetch()){
             $vital_sign_NA = false;
-            echo "<div class = \"".$line['sign_name']."\">\n".
+            echo "<div class = \"".$line['sign_name']." vitalsignsdiv\">\n".
               "\t".$line['value']. " at ".$line['time']."\n".
               "</div>\n";
           }
