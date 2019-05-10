@@ -170,7 +170,7 @@ if(!isset($_SESSION['user'])){
           '".$_GET['note']."'
         )";
       $dbh->exec($sql);
-      changeH3('$_GET[\'dropdown_vs\']');
+      //changeH3('$_GET[\'dropdown_vs\']');
     }
 
 
@@ -410,9 +410,9 @@ catch(PDOException $e)
 
 
 echo '<br>
-      <div>
+      <div id="patientfooter">
       <form action="/logout.php" method="get">
-      <button type="submit">Logout as '.$_SESSION['user'];
+      <button style="float:right;" type="submit">Logout as '.$_SESSION['user'];
 echo '</button>
       </form>
       </div>';
