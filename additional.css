@@ -55,7 +55,8 @@ footer, header, hgroup, menu, nav, section {
   display: block; }
 
 body {
-  line-height: 1; }
+  line-height: 1; 
+  margin: 5%; }
 
 ol, ul {
   list-style: none; }
@@ -389,7 +390,7 @@ textarea {
   outline: 0;
   padding: 0 1rem;
   text-decoration: none;
-  width: 100%; }
+  width: 30%; }
   input[type="text"]:invalid,
   input[type="password"]:invalid,
   input[type="email"]:invalid,

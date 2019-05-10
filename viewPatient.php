@@ -405,28 +405,14 @@ catch(PDOException $e)
 }
 
 
+echo '<br>
+      <div>
+      <form action="/logout.php" method="get">
+      <button type="submit">Logout as '.$_SESSION['user'];
+echo '
+</button>';
+
 ?>
-
-
-
-<br/><br/><br/>
-<i><a href="logout.php">Logout</a></i> 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <form>
   <input type="text" name="myText" value="Norway" selectBoxOptions="Canada;Denmark;Finland;Germany;Mexico;Norway;Sweden;United Kingdom;United States">
@@ -440,4 +426,20 @@ createEditableSelect(document.forms[0].myText2);
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
