@@ -61,6 +61,9 @@ if(!$logged){
 // the form is only displayed if the person is not logged.
 if(!$logged){
 ?>
+<head>
+<link rel="stylesheet" type="text/css" href="additional.css" >
+</head>
 <form method='POST'>
    <input type="text" name="user">
    <input type="password" name="pwd">
@@ -74,5 +77,4 @@ else{
   echo "You are loged in:".$_SESSION['user'];
   echo "<a href='logout.php'>Logout</a>";
   }
-
   ?>
