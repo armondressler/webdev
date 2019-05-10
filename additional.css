@@ -2669,6 +2669,13 @@ body {
 	top: 0;
       	left: 0;
 }
+#patientfooter {
+	position: fixed;
+	background: #eeeeee;
+	width: 100%;
+      	left: 0;
+	bottom: 0;
+}
 
 /* Main */
 #main .content {
@@ -2831,7 +2838,9 @@ body.is-menu-visible #menu {
   box-shadow: 0 0 1.5rem 0 rgba(0, 0, 0, 0.2);
   visibility: visible; }
 
-
+.vitalsignsdiv {
+	display: none;
+}
 
 .selectBoxArrow {
   margin-top: 1px;

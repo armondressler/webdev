@@ -106,7 +106,7 @@ if(!isset($_SESSION['user'])){
           $vital_sign_NA = true;
           while($line = $statement->fetch()){
             $vital_sign_NA = false;
-            echo "<div class = \"".$line['sign_name']."\">\n".
+            echo "<div class = \"".$line['sign_name']." vitalsignsdiv\">\n".
               "\t".$line['value']. " at ".$line['time']."\n".
               "</div>\n";
           }
@@ -170,7 +170,7 @@ if(!isset($_SESSION['user'])){
           '".$_GET['note']."'
         )";
       $dbh->exec($sql);
-      changeH3('$_GET[\'dropdown_vs\']');
+      //changeH3('$_GET[\'dropdown_vs\']');
     }
 
 
@@ -410,9 +410,9 @@ catch(PDOException $e)
 
 
 echo '<br>
-      <div>
+      <div id="patientfooter">
       <form action="/logout.php" method="get">
-      <button type="submit">Logout as '.$_SESSION['user'];
+      <button style="float:right;" type="submit">Logout as '.$_SESSION['user'];
 echo '</button>
       </form>
       </div>';
