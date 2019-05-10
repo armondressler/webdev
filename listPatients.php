@@ -42,9 +42,11 @@ catch(PDOException $e)
 }
 
 echo '<br>
-      <div>
+      <div id="patientfooter">
       <form action="/logout.php" method="get">
-      <button type="submit">Logout as '.$_SESSION['user'];
-echo '
-</button>';
+      <button style="float:right;" type="submit">Logout as '.$_SESSION['user'];
+echo '</button>
+      </form>
+      </div>';
+
 ?>

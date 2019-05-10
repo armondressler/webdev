@@ -147,7 +147,7 @@ if(!isset($_SESSION['user'])){
 <?php
     //set the submit button for the new vital sign
 ?>
-        <input type="submit" name="AddValue" value="add AND display"/>
+        <input type="submit" name="AddValue" value="add"/>
     </form>    
 <?php
 
@@ -420,20 +420,5 @@ echo '</button>
 ?>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
